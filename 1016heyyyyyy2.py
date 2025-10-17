@@ -4,21 +4,18 @@ import cv2
 from PIL import Image
 from skimage import color
 import matplotlib.pyplot as plt
-import matplotlib
 import platform
 
 # ----------------------------
 # 한글 깨짐 방지 (그래프용)
 # ----------------------------
 if platform.system() == 'Windows':
-    matplotlib.rc('font', family='Malgun Gothic')
+    plt.rcParams['font.family'] = 'Malgun Gothic'
 elif platform.system() == 'Darwin':
-    matplotlib.rc('font', family='AppleGothic')
+    plt.rcParams['font.family'] = 'AppleGothic'
 else:
-    matplotlib.rc('font', family='NanumGothic')  # Linux에서 사용, 설치 필요
-
-matplotlib.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
-
+    plt.rcParams['font.family'] = 'NanumGothic'  # Linux
+plt.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
 
 # ----------------------------
 # 기본 설정
@@ -73,7 +70,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     bars = ax.bar(labels, diffs, color=colors)
     for bar, val in zip(bars, diffs):
         ax.text(bar.get_x() + bar.get_width()/2, val + (0.5 if val > 0 else -1),
-                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9)
+                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9, fontname=plt.rcParams['font.family'])
 
     ax.axhline(0, color='black', linewidth=1)
     ax.axhline(-5, color='orange', linestyle='--', linewidth=1, label='L* ≤ -5 : 어두워짐(주의)')
@@ -81,9 +78,9 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
 
     ax.set_ylim(-15, 15)
-    ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10)
-    ax.set_ylabel("변화량 (Δ)", fontsize=10)
-    ax.legend(fontsize=8, loc='upper right')
+    ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontname=plt.rcParams['font.family'])
+    ax.set_ylabel("변화량 (Δ)", fontsize=10, fontname=plt.rcParams['font.family'])
+    ax.legend(fontsize=8, loc='upper right', prop={'family': plt.rcParams['font.family']})
     ax.grid(axis='y', linestyle='--', alpha=0.3)
     st.pyplot(fig)
 
@@ -151,6 +148,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
