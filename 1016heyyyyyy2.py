@@ -5,20 +5,20 @@ from PIL import Image
 from skimage import color
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
-import platform
+import os
 
 # ----------------------------
-# 한글 폰트 직접 등록 (Streamlit용)
+# 한글 폰트 설정 (Streamlit 호환)
 # ----------------------------
-if platform.system() == 'Windows':
-    font_path = "C:/Windows/Fonts/malgun.ttf"  # 말굽 고딕 경로
-elif platform.system() == 'Darwin':
-    font_path = "/System/Library/Fonts/Supplemental/AppleGothic.ttf"
-else:  # Linux
-    font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+# 앱 폴더 내 fonts/NanumGothic.ttf 경로 사용
+font_path = os.path.join(os.path.dirname(__file__), "fonts", "NanumGothic.ttf")
+if os.path.exists(font_path):
+    font_name = font_manager.FontProperties(fname=font_path).get_name()
+    plt.rcParams['font.family'] = font_name
+else:
+    # 폰트 없으면 기본으로 fallback
+    plt.rcParams['font.family'] = 'DejaVu Sans'
 
-font_name = font_manager.FontProperties(fname=font_path).get_name()
-plt.rcParams['font.family'] = font_name
 plt.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
 
 # ----------------------------
@@ -27,6 +27,7 @@ plt.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
 st.set_page_config(page_title="오메가-3 산패 판정 시스템", page_icon="💊", layout="centered")
 st.title("💊 오메가-3 색 기반 산패 판정 시스템")
 
+# 여기서부터 기존 코드 그대로 이어서 사용
 normal_lab = np.array([75.0, 5.0, 25.0])  # 기준 밝은 황금빛
 
 # ----------------------------
@@ -152,3 +153,4 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
