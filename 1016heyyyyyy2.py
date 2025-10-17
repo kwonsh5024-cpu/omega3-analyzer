@@ -1,22 +1,23 @@
 import streamlit as st
 import numpy as np
-import cv2
+import cv2  # 배포용: opencv-python-headless 설치 권장
 from PIL import Image
 from skimage import color
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
+from matplotlib import rc
 
-plt.rc('font', family='Malgun Gothic')  # ✅ 한글 폰트 설정
-plt.rcParams['axes.unicode_minus'] = False  # ✅ 마이너스 기호 깨짐 방지
+# ----------------------------
+# 한글 깨짐 방지
+# ----------------------------
+rc('font', family='Malgun Gothic')
+plt.rcParams['axes.unicode_minus'] = False
 
 # ----------------------------------
 # 기본 설정
 # ----------------------------------
 st.set_page_config(page_title="오메가-3 산패 판정 시스템", page_icon="💊", layout="centered")
-st.title("💊 오메가-3 색 기반 산패 판정 시스템")
+st.title("💊 오메가-3 색 기반 산패 판정 시스템 (v3.3 final)")
 
-# 정상 기준값 (밝은 황금빛)
 normal_lab = np.array([75.0, 5.0, 25.0])
 
 # ----------------------------------
@@ -67,7 +68,6 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
         ax.text(bar.get_x() + bar.get_width()/2, val + (0.5 if val > 0 else -1),
                 f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9)
 
-    # 기준선
     ax.axhline(0, color='black', linewidth=1)
     ax.axhline(-5, color='orange', linestyle='--', linewidth=1, label='L* ≤ -5 : 어두워짐(주의)')
     ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
@@ -89,13 +89,11 @@ def judge_oxidation(mean_lab, normal_lab):
     a_diff = mean_lab[1] - normal_lab[1]
     b_diff = mean_lab[2] - normal_lab[2]
 
-    # 갈변 경향 감지
     warning_signs = []
     if L_diff <= -5: warning_signs.append("밝기 감소")
     if a_diff >= 4: warning_signs.append("붉은기 증가")
     if b_diff <= -3: warning_signs.append("노란기 감소")
 
-    # 기본 판정
     if L_diff > 0:
         status = "🟢 정상"
         desc = "밝기가 정상보다 높습니다. 조명 영향으로 판단됩니다."
@@ -109,7 +107,6 @@ def judge_oxidation(mean_lab, normal_lab):
         status = "🔴 위험"
         desc = "명확한 색 변화가 확인되었습니다. 산패 가능성이 높습니다."
 
-    # 갈변 패턴이 감지된 경우 설명 추가
     if len(warning_signs) > 0:
         desc += f"  (감지된 변화: {', '.join(warning_signs)})"
 
@@ -119,12 +116,10 @@ def judge_oxidation(mean_lab, normal_lab):
 # Streamlit UI
 # ----------------------------------
 st.markdown("📸 **오메가-3 캡슐 사진을 업로드하면 자동으로 분석이 시작됩니다.**")
-multi_files = st.file_uploader("여러 장의 사진도 업로드 가능", 
+multi_files = st.file_uploader("여러 장 업로드 가능", 
                                type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
 if multi_files:
-    all_results = []
-
     for file in multi_files:
         image = Image.open(file).convert("RGB")
         st.image(image, caption=f"업로드된 이미지: {file.name}", use_column_width=True)
@@ -136,7 +131,6 @@ if multi_files:
 
         if mean_lab is not None:
             deltaE, L_diff, a_diff, b_diff, status, desc = judge_oxidation(mean_lab, normal_lab)
-            all_results.append(deltaE)
 
             st.subheader(f"결과 판정: {status}")
             st.write(desc)
@@ -150,19 +144,5 @@ if multi_files:
             st.write("---")
         else:
             st.warning("⚠️ 알약 영역을 인식하지 못했습니다. 배경이 단색인 사진을 사용해주세요.")
-
-    # ✅ 여러 장 업로드 시 평균 ΔE 분석
-    if len(all_results) > 1:
-        avg_deltaE = np.mean(all_results)
-        st.subheader("📊 다중 이미지 평균 분석 결과")
-        st.write(f"**평균 ΔE (색차): {avg_deltaE:.2f}** — {len(all_results)}장의 이미지를 기반으로 산출됨.")
-
-        if avg_deltaE < 12:
-            st.success("전체적으로 정상 범위입니다. (ΔE < 12)")
-        elif avg_deltaE < 28:
-            st.warning("약간의 색 변화가 있습니다. 주의가 필요합니다.")
-        else:
-            st.error("산패 의심. 보관 상태를 확인하세요.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
-
