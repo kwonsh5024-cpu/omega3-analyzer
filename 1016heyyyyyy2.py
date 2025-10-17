@@ -19,30 +19,7 @@ else:
     font_prop = None
     st.write("NanumGothic.ttf 파일 없음")
 
-# ----------------------------
-# 예시: 그래프 그리기
-# ----------------------------
-fig, ax = plt.subplots()
-ax.plot([1, 2, 3], [10, 20, 15])
-
-# 한글 폰트가 존재하면 직접 적용
-if font_prop:
-    ax.set_title("한글 제목", fontproperties=font_prop)
-    ax.set_xlabel("X축", fontproperties=font_prop)
-    ax.set_ylabel("Y축", fontproperties=font_prop)
-else:
-    ax.set_title("제목")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-
-plt.tight_layout()
-st.pyplot(fig)
-
-# ----------------------------
-# 마이너스 깨짐 방지
-# ----------------------------
-plt.rcParams['axes.unicode_minus'] = False
-
+plt.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
 
 # ----------------------------
 # Streamlit 기본 설정
@@ -50,7 +27,6 @@ plt.rcParams['axes.unicode_minus'] = False
 st.set_page_config(page_title="오메가-3 산패 판정 시스템", page_icon="💊", layout="centered")
 st.title("💊 오메가-3 색 기반 산패 판정 시스템")
 
-# 여기서부터 기존 코드 그대로 이어서 사용
 normal_lab = np.array([75.0, 5.0, 25.0])  # 기준 밝은 황금빛
 
 # ----------------------------
@@ -95,14 +71,14 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
     colors = ['gold', 'tomato', 'skyblue']
 
+    # 바 생성
     bars = ax.bar(range(len(diffs)), diffs, color=colors)
 
-    # x축 레이블 직접 적용
+    # x축 레이블 직접 설정
+    ax.set_xticks(range(len(labels)))
     if font_prop:
-        ax.set_xticks(range(len(labels)))
         ax.set_xticklabels(labels, fontproperties=font_prop)
     else:
-        ax.set_xticks(range(len(labels)))
         ax.set_xticklabels(labels)
 
     # 바 위 숫자 표시
@@ -116,6 +92,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
 
+    # 제목, y축, 레전드에 폰트 적용
     if font_prop:
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontproperties=font_prop)
         ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=font_prop)
@@ -193,10 +170,6 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
-
-
-
-
 
 
 
