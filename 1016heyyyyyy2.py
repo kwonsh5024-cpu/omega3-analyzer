@@ -4,21 +4,25 @@ import cv2
 from PIL import Image
 from skimage import color
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 import platform
 
 # ----------------------------
-# 한글 깨짐 방지 (그래프용)
+# 한글 폰트 직접 등록 (Streamlit용)
 # ----------------------------
 if platform.system() == 'Windows':
-    plt.rcParams['font.family'] = 'Malgun Gothic'
+    font_path = "C:/Windows/Fonts/malgun.ttf"  # 말굽 고딕 경로
 elif platform.system() == 'Darwin':
-    plt.rcParams['font.family'] = 'AppleGothic'
-else:
-    plt.rcParams['font.family'] = 'NanumGothic'  # Linux
+    font_path = "/System/Library/Fonts/Supplemental/AppleGothic.ttf"
+else:  # Linux
+    font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+
+font_name = font_manager.FontProperties(fname=font_path).get_name()
+plt.rcParams['font.family'] = font_name
 plt.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
 
 # ----------------------------
-# 기본 설정
+# Streamlit 기본 설정
 # ----------------------------
 st.set_page_config(page_title="오메가-3 산패 판정 시스템", page_icon="💊", layout="centered")
 st.title("💊 오메가-3 색 기반 산패 판정 시스템")
@@ -70,7 +74,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     bars = ax.bar(labels, diffs, color=colors)
     for bar, val in zip(bars, diffs):
         ax.text(bar.get_x() + bar.get_width()/2, val + (0.5 if val > 0 else -1),
-                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9, fontname=plt.rcParams['font.family'])
+                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9)
 
     ax.axhline(0, color='black', linewidth=1)
     ax.axhline(-5, color='orange', linestyle='--', linewidth=1, label='L* ≤ -5 : 어두워짐(주의)')
@@ -78,9 +82,9 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
 
     ax.set_ylim(-15, 15)
-    ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontname=plt.rcParams['font.family'])
-    ax.set_ylabel("변화량 (Δ)", fontsize=10, fontname=plt.rcParams['font.family'])
-    ax.legend(fontsize=8, loc='upper right', prop={'family': plt.rcParams['font.family']})
+    ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10)
+    ax.set_ylabel("변화량 (Δ)", fontsize=10)
+    ax.legend(fontsize=8, loc='upper right')
     ax.grid(axis='y', linestyle='--', alpha=0.3)
     st.pyplot(fig)
 
@@ -148,8 +152,3 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
-
-
-
-
-
