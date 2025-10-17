@@ -136,6 +136,35 @@ def judge_oxidation(mean_lab, normal_lab):
     return deltaE, L_diff, a_diff, b_diff, status, desc
 
 # ----------------------------
+# 알약 여부 체크 함수 (면적 + 컨투어 + 비율)
+# ----------------------------
+def is_capsule(mask, image):
+    mask_area = np.sum(mask)
+    h, w = mask.shape
+    total_area = h * w
+    mask_ratio = mask_area / total_area
+
+    # 최소 마스크 면적 비율
+    if mask_ratio < 0.01:
+        return False
+
+    # 가장 큰 컨투어 확인
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours) == 0:
+        return False
+
+    largest_contour = max(contours, key=cv2.contourArea)
+    x, y, cw, ch = cv2.boundingRect(largest_contour)
+    aspect_ratio = cw / ch
+    contour_area = cv2.contourArea(largest_contour)
+
+    # 컨투어 면적이 너무 작거나 가로세로 비율이 너무 튀면 알약 아님
+    if contour_area < 500 or aspect_ratio < 0.3 or aspect_ratio > 3:
+        return False
+
+    return True
+
+# ----------------------------
 # Streamlit UI
 # ----------------------------
 st.markdown("📸 **오메가-3 캡슐 사진을 업로드하면 자동 분석됩니다.**")
@@ -148,11 +177,10 @@ if multi_files:
         st.image(image, caption=f"업로드 이미지: {file.name}", use_container_width=True)
 
         capsule_img, mask = extract_capsule_area(image)
-        mask_area = np.sum(mask)
 
-        # 알약 감지 여부 확인
-        if mask_area < 500:  # 임계값, 필요시 조정 가능
-            st.warning("⚠️ 업로드된 사진에서 알약이 감지되지 않았습니다. 알약 사진만 업로드해주세요.")
+        # 알약 여부 체크
+        if not is_capsule(mask, image):
+            st.warning("⚠️ 업로드된 사진에서 알약이 감지되지 않았습니다. 알약 사진만 올려주세요.")
             continue
 
         st.image(capsule_img, caption="🎯 알약 영역 추출 결과", use_container_width=True)
@@ -174,3 +202,4 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
