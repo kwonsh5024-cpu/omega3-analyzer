@@ -1,28 +1,40 @@
 import streamlit as st
 import numpy as np
-import cv2  # 배포용: opencv-python-headless 설치 권장
+import cv2
 from PIL import Image
 from skimage import color
 import matplotlib.pyplot as plt
-from matplotlib import rc
+from matplotlib import font_manager as fm
+import urllib.request, os, zipfile
 
 # ----------------------------
-# 한글 깨짐 방지
+# 0️⃣ 한글 폰트 설정 (Streamlit Cloud 대응)
 # ----------------------------
-rc('font', family='Malgun Gothic')
+font_path = "/tmp/NotoSansCJK-Regular.ttc"
+if not os.path.exists(font_path):
+    url = "https://noto-website-2.storage.googleapis.com/pkgs/NotoSansCJKjp-hinted.zip"
+    zip_path = "/tmp/NotoSansCJK.zip"
+    urllib.request.urlretrieve(url, zip_path)
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall("/tmp/")
+    font_path = "/tmp/NotoSansCJK-Regular.ttc"
+
+prop = fm.FontProperties(fname=font_path)
+plt.rcParams['font.family'] = prop.get_name()
 plt.rcParams['axes.unicode_minus'] = False
 
-# ----------------------------------
-# 기본 설정
-# ----------------------------------
+# ----------------------------
+# 1️⃣ 기본 설정
+# ----------------------------
 st.set_page_config(page_title="오메가-3 산패 판정 시스템", page_icon="💊", layout="centered")
-st.title("💊 오메가-3 색 기반 산패 판정 시스템")
+st.title("💊 오메가-3 색 기반 산패 판정 시스템 (v3.4 배포용)")
 
+# 정상 기준값 (밝은 황금빛)
 normal_lab = np.array([75.0, 5.0, 25.0])
 
-# ----------------------------------
-# 알약 영역 추출 + 그림자 제거
-# ----------------------------------
+# ----------------------------
+# 2️⃣ 알약 영역 추출 + 그림자 제거
+# ----------------------------
 def extract_capsule_area(image: Image.Image):
     img = np.array(image.convert("RGB"))
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
@@ -42,9 +54,9 @@ def extract_capsule_area(image: Image.Image):
     masked = cv2.bitwise_and(img, img, mask=mask)
     return Image.fromarray(masked), mask
 
-# ----------------------------------
-# 평균 LAB 색상 계산
-# ----------------------------------
+# ----------------------------
+# 3️⃣ 평균 LAB 색상 계산
+# ----------------------------
 def mean_lab_in_mask(image: Image.Image, mask):
     img_arr = np.array(image.convert("RGB")) / 255.0
     lab_arr = color.rgb2lab(img_arr)
@@ -54,9 +66,9 @@ def mean_lab_in_mask(image: Image.Image, mask):
     mean_lab = np.mean(lab_arr[mask_bool], axis=0)
     return mean_lab
 
-# ----------------------------------
-# LAB 변화 시각화 그래프
-# ----------------------------------
+# ----------------------------
+# 4️⃣ LAB 변화 시각화 그래프
+# ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
     fig, ax = plt.subplots(figsize=(4.5, 3))
     diffs = [L_diff, a_diff, b_diff]
@@ -69,20 +81,15 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
                 f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9)
 
     ax.axhline(0, color='black', linewidth=1)
-    ax.axhline(-5, color='orange', linestyle='--', linewidth=1, label='L* ≤ -5 : 어두워짐(주의)')
-    ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
-    ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
-
     ax.set_ylim(-15, 15)
     ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10)
     ax.set_ylabel("변화량 (Δ)", fontsize=10)
-    ax.legend(fontsize=8, loc='upper right')
     ax.grid(axis='y', linestyle='--', alpha=0.3)
     st.pyplot(fig)
 
-# ----------------------------------
-# 산패 판정 로직
-# ----------------------------------
+# ----------------------------
+# 5️⃣ 산패 판정 로직
+# ----------------------------
 def judge_oxidation(mean_lab, normal_lab):
     deltaE = np.linalg.norm(mean_lab - normal_lab)
     L_diff = mean_lab[0] - normal_lab[0]
@@ -112,12 +119,11 @@ def judge_oxidation(mean_lab, normal_lab):
 
     return deltaE, L_diff, a_diff, b_diff, status, desc
 
-# ----------------------------------
-# Streamlit UI
-# ----------------------------------
+# ----------------------------
+# 6️⃣ Streamlit UI
+# ----------------------------
 st.markdown("📸 **오메가-3 캡슐 사진을 업로드하면 자동으로 분석이 시작됩니다.**")
-multi_files = st.file_uploader("여러 장 업로드 가능", 
-                               type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+multi_files = st.file_uploader("여러 장 업로드 가능", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
 if multi_files:
     for file in multi_files:
@@ -146,4 +152,6 @@ if multi_files:
             st.warning("⚠️ 알약 영역을 인식하지 못했습니다. 배경이 단색인 사진을 사용해주세요.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
+
 
