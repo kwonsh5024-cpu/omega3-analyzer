@@ -23,7 +23,7 @@ plt.rcParams['axes.unicode_minus'] = False
 # 1️⃣ 기본 설정
 # ----------------------------
 st.set_page_config(page_title="오메가-3 산패 판정 시스템", page_icon="💊", layout="centered")
-st.title("💊 오메가-3 색 기반 산패 판정 시스템 (v3.5 배포용)")
+st.title("💊 오메가-3 색 기반 산패 판정 시스템")
 
 # 정상 기준값 (밝은 황금빛)
 normal_lab = np.array([75.0, 5.0, 25.0])
@@ -148,3 +148,4 @@ if multi_files:
             st.warning("⚠️ 알약 영역을 인식하지 못했습니다. 배경이 단색인 사진을 사용해주세요.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
