@@ -5,11 +5,20 @@ from PIL import Image
 from skimage import color
 import matplotlib.pyplot as plt
 import matplotlib
+import platform
 
 # ----------------------------
-# 한글 깨짐 방지
+# 한글 깨짐 방지 (그래프용)
 # ----------------------------
-matplotlib.rcParams['font.family'] = 'DejaVu Sans'
+if platform.system() == 'Windows':
+    matplotlib.rc('font', family='Malgun Gothic')
+elif platform.system() == 'Darwin':
+    matplotlib.rc('font', family='AppleGothic')
+else:
+    matplotlib.rc('font', family='NanumGothic')  # Linux에서 사용, 설치 필요
+
+matplotlib.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
+
 
 # ----------------------------
 # 기본 설정
@@ -142,6 +151,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
