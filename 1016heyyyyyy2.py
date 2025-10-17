@@ -96,22 +96,29 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     colors = ['gold', 'tomato', 'skyblue']
 
     bars = ax.bar(labels, diffs, color=colors)
-    for bar, val in zip(bars, diffs):
+    for bar, val, label in zip(bars, diffs, labels):
         ax.text(bar.get_x() + bar.get_width()/2, val + (0.5 if val > 0 else -1),
-                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9)
+                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top',
+                fontsize=9, fontproperties=font_prop if font_prop else None)
 
     ax.axhline(0, color='black', linewidth=1)
     ax.axhline(-5, color='orange', linestyle='--', linewidth=1, label='L* ≤ -5 : 어두워짐(주의)')
     ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    ax.set_ylim(-15, 15)
-    ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10)
-    ax.set_ylabel("변화량 (Δ)", fontsize=10)
-    ax.legend(fontsize=8, loc='upper right')
-    ax.grid(axis='y', linestyle='--', alpha=0.3)
-    st.pyplot(fig)
+    # 제목, 레이블, 레전드에 폰트 적용
+    if font_prop:
+        ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontproperties=font_prop)
+        ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=font_prop)
+        ax.legend(fontsize=8, loc='upper right', prop=font_prop)
+    else:
+        ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10)
+        ax.set_ylabel("변화량 (Δ)", fontsize=10)
+        ax.legend(fontsize=8, loc='upper right')
 
+    ax.grid(axis='y', linestyle='--', alpha=0.3)
+    plt.tight_layout()
+    st.pyplot(fig)
 # ----------------------------
 # 산패 판정 로직
 # ----------------------------
@@ -176,6 +183,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
