@@ -145,7 +145,7 @@ multi_files = st.file_uploader("여러 장의 사진도 업로드 가능",
 if multi_files:
     for file in multi_files:
         image = Image.open(file).convert("RGB")
-        st.image(image, caption=f"업로드 이미지: {file.name}", use_column_width=True)
+        st.image(image, caption=f"업로드 이미지: {file.name}", use_container_width=True)
 
         capsule_img, mask = extract_capsule_area(image)
         mask_area = np.sum(mask)
@@ -155,7 +155,7 @@ if multi_files:
             st.warning("⚠️ 업로드된 사진에서 알약이 감지되지 않았습니다. 알약 사진만 업로드해주세요.")
             continue
 
-        st.image(capsule_img, caption="🎯 알약 영역 추출 결과", use_column_width=True)
+        st.image(capsule_img, caption="🎯 알약 영역 추출 결과", use_container_width=True)
 
         mean_lab = mean_lab_in_mask(image, mask)
         if mean_lab is not None:
