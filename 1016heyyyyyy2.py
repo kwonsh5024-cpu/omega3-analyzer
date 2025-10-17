@@ -10,7 +10,6 @@ import os
 # ----------------------------
 # 한글 폰트 설정 (Streamlit 호환)
 # ----------------------------
-# 앱 루트 기준으로 폰트 경로 설정 (폴더 없이 바로 업로드한 경우)
 font_path = os.path.join(os.getcwd(), "NanumGothic.ttf")
 if os.path.exists(font_path):
     font_prop = font_manager.FontProperties(fname=font_path)
@@ -71,10 +70,9 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
     colors = ['gold', 'tomato', 'skyblue']
 
-    # 바 생성
     bars = ax.bar(range(len(diffs)), diffs, color=colors)
 
-    # x축 레이블 직접 설정
+    # x축 레이블 적용
     ax.set_xticks(range(len(labels)))
     if font_prop:
         ax.set_xticklabels(labels, fontproperties=font_prop)
@@ -92,7 +90,6 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 제목, y축, 레전드에 폰트 적용
     if font_prop:
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontproperties=font_prop)
         ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=font_prop)
@@ -151,6 +148,13 @@ if multi_files:
         st.image(image, caption=f"업로드 이미지: {file.name}", use_column_width=True)
 
         capsule_img, mask = extract_capsule_area(image)
+        mask_area = np.sum(mask)
+
+        # 알약 감지 여부 확인
+        if mask_area < 500:  # 임계값, 필요시 조정 가능
+            st.warning("⚠️ 업로드된 사진에서 알약이 감지되지 않았습니다. 알약 사진만 업로드해주세요.")
+            continue
+
         st.image(capsule_img, caption="🎯 알약 영역 추출 결과", use_column_width=True)
 
         mean_lab = mean_lab_in_mask(image, mask)
@@ -170,10 +174,3 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
-
-
-
-
-
-
-
