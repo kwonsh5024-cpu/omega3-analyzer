@@ -10,21 +10,39 @@ import os
 # ----------------------------
 # 한글 폰트 설정 (Streamlit 호환)
 # ----------------------------
-# 폰트 캐시 재생성 (B 방법)
-font_manager._rebuild()
-
-# 앱 루트 기준 경로 사용 (A 방법)
-font_path = os.path.join(os.getcwd(), "NanumGothic.ttf")  # 폴더 없이 바로 업로드한 경우
+# 앱 루트 기준으로 폰트 경로 설정 (폴더 없이 바로 업로드한 경우)
+font_path = os.path.join(os.getcwd(), "NanumGothic.ttf")
 if os.path.exists(font_path):
     font_prop = font_manager.FontProperties(fname=font_path)
-    font_name = font_prop.get_name()
-    plt.rcParams['font.family'] = font_name
-    st.write(f"폰트 적용됨: {font_name}")
+    st.write(f"폰트 적용됨: {font_prop.get_name()}")
 else:
-    plt.rcParams['font.family'] = 'DejaVu Sans'
+    font_prop = None
     st.write("NanumGothic.ttf 파일 없음")
 
-plt.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
+# ----------------------------
+# 예시: 그래프 그리기
+# ----------------------------
+fig, ax = plt.subplots()
+ax.plot([1, 2, 3], [10, 20, 15])
+
+# 한글 폰트가 존재하면 직접 적용
+if font_prop:
+    ax.set_title("한글 제목", fontproperties=font_prop)
+    ax.set_xlabel("X축", fontproperties=font_prop)
+    ax.set_ylabel("Y축", fontproperties=font_prop)
+else:
+    ax.set_title("제목")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+
+plt.tight_layout()
+st.pyplot(fig)
+
+# ----------------------------
+# 마이너스 깨짐 방지
+# ----------------------------
+plt.rcParams['axes.unicode_minus'] = False
+
 
 # ----------------------------
 # Streamlit 기본 설정
@@ -158,6 +176,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
