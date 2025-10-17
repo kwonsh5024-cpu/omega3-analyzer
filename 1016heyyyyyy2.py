@@ -4,37 +4,27 @@ import cv2
 from PIL import Image
 from skimage import color
 import matplotlib.pyplot as plt
-from matplotlib import font_manager as fm
-import urllib.request, os
+import matplotlib
 
 # ----------------------------
-# 0️⃣ 한글 폰트 설정 (Streamlit Cloud 대응)
+# 한글 깨짐 방지
 # ----------------------------
-font_path = "/tmp/NotoSansCJKjp-Regular.otf"
-if not os.path.exists(font_path):
-    url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansCJKjp-Regular.otf?raw=true"
-    urllib.request.urlretrieve(url, font_path)
-
-prop = fm.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = prop.get_name()
-plt.rcParams['axes.unicode_minus'] = False
+matplotlib.rcParams['font.family'] = 'DejaVu Sans'
 
 # ----------------------------
-# 1️⃣ 기본 설정
+# 기본 설정
 # ----------------------------
 st.set_page_config(page_title="오메가-3 산패 판정 시스템", page_icon="💊", layout="centered")
-st.title("💊 오메가-3 색 기반 산패 판정 시스템")
+st.title("💊 오메가-3 색 기반 산패 판정 시스템 (v3.5 배포용)")
 
-# 정상 기준값 (밝은 황금빛)
-normal_lab = np.array([75.0, 5.0, 25.0])
+normal_lab = np.array([75.0, 5.0, 25.0])  # 기준 밝은 황금빛
 
 # ----------------------------
-# 2️⃣ 알약 영역 추출 + 그림자 제거
+# 알약 영역 추출 + 그림자 제거
 # ----------------------------
 def extract_capsule_area(image: Image.Image):
     img = np.array(image.convert("RGB"))
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-
     lower = np.array([10, 40, 70])
     upper = np.array([40, 255, 255])
     mask = cv2.inRange(hsv, lower, upper)
@@ -51,7 +41,7 @@ def extract_capsule_area(image: Image.Image):
     return Image.fromarray(masked), mask
 
 # ----------------------------
-# 3️⃣ 평균 LAB 색상 계산
+# 평균 LAB 색상 계산
 # ----------------------------
 def mean_lab_in_mask(image: Image.Image, mask):
     img_arr = np.array(image.convert("RGB")) / 255.0
@@ -63,7 +53,7 @@ def mean_lab_in_mask(image: Image.Image, mask):
     return mean_lab
 
 # ----------------------------
-# 4️⃣ LAB 변화 시각화 그래프
+# LAB 변화 시각화
 # ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
     fig, ax = plt.subplots(figsize=(4.5, 3))
@@ -77,14 +67,19 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
                 f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top', fontsize=9)
 
     ax.axhline(0, color='black', linewidth=1)
+    ax.axhline(-5, color='orange', linestyle='--', linewidth=1, label='L* ≤ -5 : 어두워짐(주의)')
+    ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
+    ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
+
     ax.set_ylim(-15, 15)
     ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10)
     ax.set_ylabel("변화량 (Δ)", fontsize=10)
+    ax.legend(fontsize=8, loc='upper right')
     ax.grid(axis='y', linestyle='--', alpha=0.3)
     st.pyplot(fig)
 
 # ----------------------------
-# 5️⃣ 산패 판정 로직
+# 산패 판정 로직
 # ----------------------------
 def judge_oxidation(mean_lab, normal_lab):
     deltaE = np.linalg.norm(mean_lab - normal_lab)
@@ -116,24 +111,23 @@ def judge_oxidation(mean_lab, normal_lab):
     return deltaE, L_diff, a_diff, b_diff, status, desc
 
 # ----------------------------
-# 6️⃣ Streamlit UI
+# Streamlit UI
 # ----------------------------
-st.markdown("📸 **오메가-3 캡슐 사진을 업로드하면 자동으로 분석이 시작됩니다.**")
-multi_files = st.file_uploader("여러 장 업로드 가능", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+st.markdown("📸 **오메가-3 캡슐 사진을 업로드하면 자동 분석됩니다.**")
+multi_files = st.file_uploader("여러 장의 사진도 업로드 가능", 
+                               type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
 if multi_files:
     for file in multi_files:
         image = Image.open(file).convert("RGB")
-        st.image(image, caption=f"업로드된 이미지: {file.name}", use_column_width=True)
+        st.image(image, caption=f"업로드 이미지: {file.name}", use_column_width=True)
 
         capsule_img, mask = extract_capsule_area(image)
         st.image(capsule_img, caption="🎯 알약 영역 추출 결과", use_column_width=True)
 
         mean_lab = mean_lab_in_mask(image, mask)
-
         if mean_lab is not None:
             deltaE, L_diff, a_diff, b_diff, status, desc = judge_oxidation(mean_lab, normal_lab)
-
             st.subheader(f"결과 판정: {status}")
             st.write(desc)
             st.markdown(f"""
@@ -145,7 +139,8 @@ if multi_files:
             plot_lab_differences(L_diff, a_diff, b_diff)
             st.write("---")
         else:
-            st.warning("⚠️ 알약 영역을 인식하지 못했습니다. 배경이 단색인 사진을 사용해주세요.")
+            st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
