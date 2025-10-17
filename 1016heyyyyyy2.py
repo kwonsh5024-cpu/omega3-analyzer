@@ -95,8 +95,18 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
     colors = ['gold', 'tomato', 'skyblue']
 
-    bars = ax.bar(labels, diffs, color=colors)
-    for bar, val, label in zip(bars, diffs, labels):
+    bars = ax.bar(range(len(diffs)), diffs, color=colors)
+
+    # x축 레이블 직접 적용
+    if font_prop:
+        ax.set_xticks(range(len(labels)))
+        ax.set_xticklabels(labels, fontproperties=font_prop)
+    else:
+        ax.set_xticks(range(len(labels)))
+        ax.set_xticklabels(labels)
+
+    # 바 위 숫자 표시
+    for bar, val in zip(bars, diffs):
         ax.text(bar.get_x() + bar.get_width()/2, val + (0.5 if val > 0 else -1),
                 f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top',
                 fontsize=9, fontproperties=font_prop if font_prop else None)
@@ -106,7 +116,6 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 제목, 레이블, 레전드에 폰트 적용
     if font_prop:
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontproperties=font_prop)
         ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=font_prop)
@@ -119,6 +128,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.grid(axis='y', linestyle='--', alpha=0.3)
     plt.tight_layout()
     st.pyplot(fig)
+
 # ----------------------------
 # 산패 판정 로직
 # ----------------------------
@@ -183,6 +193,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
