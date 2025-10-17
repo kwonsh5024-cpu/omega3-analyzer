@@ -11,7 +11,7 @@ import os
 # 한글 폰트 설정 (Streamlit 호환)
 # ----------------------------
 # 앱 폴더 내 fonts/NanumGothic.ttf 경로 사용
-font_path = os.path.join(os.path.dirname(__file__), "NanumGothic.ttf")
+font_path = os.path.join(os.getcwd(), "fonts", "NanumGothic.ttf")
 if os.path.exists(font_path):
     font_name = font_manager.FontProperties(fname=font_path).get_name()
     plt.rcParams['font.family'] = font_name
@@ -153,5 +153,6 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
