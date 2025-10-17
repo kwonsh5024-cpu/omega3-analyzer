@@ -1,25 +1,49 @@
 import streamlit as st
-import numpy as np
-import cv2
-from PIL import Image
-from skimage import color
 import matplotlib.pyplot as plt
-from matplotlib import font_manager
-import os
+import numpy as np
+from PIL import Image
+import io
 
 # ----------------------------
-# 한글 폰트 설정 (Streamlit 호환)
+# 한글 그래프 설정 (Streamlit 호환 안전 방식)
 # ----------------------------
-# 앱 폴더 내 fonts/NanumGothic.ttf 경로 사용
-font_path = "fonts/NanumGothic.ttf"
-if os.path.exists(font_path):
-    font_name = font_manager.FontProperties(fname=font_path).get_name()
-    plt.rcParams['font.family'] = font_name
-else:
-    # 폰트 없으면 기본으로 fallback
-    plt.rcParams['font.family'] = 'DejaVu Sans'
+import matplotlib
+from matplotlib import rcParams
+import platform
 
-plt.rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
+def set_korean_font():
+    try:
+        if platform.system() == 'Windows':
+            rcParams['font.family'] = 'Malgun Gothic'
+        elif platform.system() == 'Darwin':
+            rcParams['font.family'] = 'AppleGothic'
+        else:  # Linux (Streamlit Cloud)
+            # NanumGothic ttf 직접 로딩이 불안정하므로 fallback 사용
+            rcParams['font.family'] = 'DejaVu Sans'
+        rcParams['axes.unicode_minus'] = False  # 마이너스 깨짐 방지
+    except:
+        rcParams['font.family'] = 'DejaVu Sans'
+        rcParams['axes.unicode_minus'] = False
+
+set_korean_font()
+
+# ----------------------------
+# 샘플 그래프 생성 및 Streamlit 표시
+# ----------------------------
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+fig, ax = plt.subplots()
+ax.plot(x, y)
+ax.set_title("한글 그래프 예시")  # 제목에 한글
+ax.set_xlabel("X축")  # X축 레이블
+ax.set_ylabel("Y축")  # Y축 레이블
+
+# Streamlit에 바로 보여주기
+buf = io.BytesIO()
+fig.savefig(buf, format='png', bbox_inches='tight')
+buf.seek(0)
+st.image(Image.open(buf))
 
 # ----------------------------
 # Streamlit 기본 설정
@@ -153,6 +177,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
