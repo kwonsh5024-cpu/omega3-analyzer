@@ -64,7 +64,6 @@ def mean_lab_in_mask(image: Image.Image, mask):
 # LAB 변화 시각화
 # ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
-    # 폰트 설정
     apple_font_path = os.path.join(os.getcwd(), "AppleSDGothicNeoM.ttf")
     nanum_font_path = os.path.join(os.getcwd(), "NanumGothic.ttf")
 
@@ -76,12 +75,11 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
     colors = ['#F5C542', '#F28482', '#7FC8F8']
 
-    # 막대 그래프
     bars = ax.bar(range(len(diffs)), diffs,
                   color=colors, edgecolor="#888888", linewidth=1.0,
                   width=0.55, alpha=0.9, zorder=3)
 
-    # 숫자 (막대 위에 가깝게 표시)
+    # 숫자 (막대 위)
     for bar, val in zip(bars, diffs):
         ax.text(bar.get_x() + bar.get_width()/2,
                 bar.get_height() + (0.2 if val > 0 else -0.7),
@@ -100,14 +98,14 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(4, color='#F28482', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='#7FC8F8', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 제목 (쉼표로 변경)
-    safe_title = "색 변화 방향 (밝기, 붉은기, 노란기)"
-
-    # 축 및 제목
-    ax.set_xticks(range(len(labels)))
-    ax.set_xticklabels(labels, fontproperties=apple_font, fontsize=10, va='top', pad=8)  # ✅ 아래로 간격 띄움
-    ax.set_title(safe_title, fontsize=13, fontproperties=apple_font, pad=12)
+    # 제목
+    ax.set_title("색 변화 방향 (밝기, 붉은기, 노란기)", fontsize=13, fontproperties=apple_font, pad=12)
     ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=apple_font)
+
+    # X축 레이블 아래로 내리기
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, fontproperties=apple_font, fontsize=10)
+    ax.tick_params(axis='x', pad=6)  # 아래로 살짝 간격 띄움
 
     # 범례
     legend = ax.legend(frameon=True, loc='upper right', fontsize=8,
@@ -116,7 +114,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     legend.get_frame().set_facecolor("#f2f2f2")
     legend.get_frame().set_edgecolor("none")
 
-    # 스타일 정리
+    # 배경, 테두리
     fig.patch.set_facecolor("#fdfdfd")
     ax.set_facecolor("#ffffff")
     for side in ['top', 'right']:
@@ -124,15 +122,16 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     for side in ['left', 'bottom']:
         ax.spines[side].set_color("#cccccc")
 
-    # 눈금선 다시 추가 (은은한 점선)
+    # 눈금선 다시 활성화 (은은한 점선)
     ax.grid(axis='y', linestyle=':', color='#bbbbbb', alpha=0.4, zorder=0)
 
-    # 눈금 축(세로 짧은 표시선)은 그대로 제거
+    # 눈금 축(세로 짧은 표시선) 제거
     ax.tick_params(axis='x', length=0)
     ax.tick_params(axis='y', length=0)
 
     plt.tight_layout()
     st.pyplot(fig)
+
 
     
 # ----------------------------
@@ -230,6 +229,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
