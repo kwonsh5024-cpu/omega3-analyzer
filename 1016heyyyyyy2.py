@@ -71,7 +71,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     else:
         apple_font = font_prop  # 폴백
 
-    # Nanum 폰트 (숫자 전용)
+    # Nanum 폰트 (숫자 및 범례 전용)
     nanum_font_path = os.path.join(os.getcwd(), "NanumGothic.ttf")
     if os.path.exists(nanum_font_path):
         nanum_font = font_manager.FontProperties(fname=nanum_font_path)
@@ -83,43 +83,36 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
     colors = ['#F5C542', '#F28482', '#7FC8F8']
 
-    # 막대 그래프 (상단 테두리 제거)
-    for i, val in enumerate(diffs):
-        bar = ax.bar(i, val,
-                     color=colors[i],
-                     edgecolor="#444444",
-                     linewidth=1.0,
-                     width=0.55,
-                     alpha=0.9,
-                     zorder=3)
-        # 상단 라인 감추기
-        for spine in ax.spines.values():
-            spine.set_zorder(0)
+    # 막대 그래프 (회색 테두리)
+    bars = ax.bar(range(len(diffs)), diffs,
+                  color=colors,
+                  edgecolor="#888888", linewidth=1.0,  # 테두리 색을 회색으로 통일
+                  width=0.55, alpha=0.9, zorder=3)
 
     # 숫자 (막대 위쪽에 거의 붙게)
-    for i, val in enumerate(diffs):
+    for bar, val in zip(bars, diffs):
         ax.text(
-            i,
-            val + (0.25 if val > 0 else -0.6),
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + (0.3 if val > 0 else -0.6),
             f"{val:.1f}",
             ha='center',
             va='bottom' if val > 0 else 'top',
             fontsize=9,
             color="black",
-            fontproperties=nanum_font  # 숫자는 나눔고딕 유지
+            fontproperties=nanum_font  # 숫자만 나눔고딕
         )
 
     # 중앙 기준선
     ax.axhline(0, color="#444444", linewidth=1.0, zorder=2)
 
-    # 주의 기준선 (본래 색상 복원)
+    # 주의 기준선 (본래 색상 유지)
     ax.axhline(-5, color='#F5C542', linestyle='--', linewidth=1.2, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
     ax.axhline(4, color='#F28482', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='#7FC8F8', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 축 및 제목 (Apple 폰트 적용, 안전문자 사용)
+    # 축 및 제목 (안전한 중점 문자 사용)
+    safe_title = "색 변화 방향 (밝기 ∙ 붉은기 ∙ 노란기)"  # ‘·’ 대신 ‘∙’ 사용
     ax.set_xticks(range(len(labels)))
-    safe_title = "색 변화 방향 (밝기 \u00b7 붉은기 \u00b7 노란기)"
     if apple_font:
         ax.set_xticklabels(labels, fontproperties=apple_font, fontsize=10)
         ax.set_title(safe_title, fontsize=13, fontproperties=apple_font, pad=12)
@@ -129,9 +122,9 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
         ax.set_title(safe_title, fontsize=13, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10)
 
-    # 범례 (부드러운 회색 배경)
+    # 범례 (나눔고딕 + 회색 배경)
     legend = ax.legend(frameon=True, loc='upper right', fontsize=8,
-                       prop=apple_font if apple_font else None)
+                       prop=nanum_font if nanum_font else None)
     legend.get_frame().set_alpha(0.85)
     legend.get_frame().set_facecolor("#f2f2f2")
     legend.get_frame().set_edgecolor("none")
@@ -147,7 +140,6 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
 
     plt.tight_layout()
     st.pyplot(fig)
-
     
 # ----------------------------
 # 산패 판정 로직
@@ -244,6 +236,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
