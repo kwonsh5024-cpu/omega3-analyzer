@@ -72,19 +72,17 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     # 막대 그래프 (테두리 추가)
     bars = ax.bar(range(len(diffs)), diffs,
                   color=colors,
-                  edgecolor="#444444", linewidth=1.0,  # 테두리
+                  edgecolor="#444444", linewidth=1.0,
                   width=0.55, alpha=0.9, zorder=3)
 
-    # 막대 내부 중앙에 값 표시 (색상은 검정)
+    # 막대 위쪽에 숫자 표시 (거의 붙여서)
     for bar, val in zip(bars, diffs):
-        height = bar.get_height()
-        y_pos = height / 2 if val >= 0 else height / 2  # 중앙에 위치
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            y_pos / 2,  # 중앙정렬 보정
+            bar.get_height() + (0.3 if val > 0 else -0.6),  # 막대 위·아래 살짝 여백
             f"{val:.1f}",
-            ha="center",
-            va="center",
+            ha='center',
+            va='bottom' if val > 0 else 'top',
             fontsize=9,
             color="black",
             fontproperties=font_prop if font_prop else None
@@ -223,6 +221,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
