@@ -63,6 +63,8 @@ def mean_lab_in_mask(image: Image.Image, mask):
 # ----------------------------
 # LAB 변화 시각화
 # ----------------------------
+import matplotlib.patheffects as path_effects
+
 def plot_lab_differences(L_diff, a_diff, b_diff):
     import os
     from matplotlib import font_manager
@@ -72,24 +74,34 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
     colors = ['#F5C542', '#F28482', '#7FC8F8']
 
-    # AppleSDGothicNeoB.ttf 폰트 로드
+    # AppleSDGothicNeoB 폰트 적용
     font_path = os.path.join(os.getcwd(), "AppleSDGothicNeoB.ttf")
     font_prop = font_manager.FontProperties(fname=font_path)
 
-    # 막대 그래프 (테두리 추가)
+    # 막대 그래프 (테두리 포함)
     bars = ax.bar(range(len(diffs)), diffs,
                   color=colors,
                   edgecolor="#444444", linewidth=1.0,
                   width=0.55, alpha=0.9, zorder=3)
 
-    # 막대 위 숫자 (나눔고딕 유지)
+    # 막대 위 숫자 표시 (겹침 방지 + 흰색 테두리)
     for bar, val in zip(bars, diffs):
-        ax.text(bar.get_x() + bar.get_width()/2, val + (0.7 if val > 0 else -1),
-                f"{val:.1f}", ha='center',
-                va='bottom' if val > 0 else 'top',
-                fontsize=9, color="#333333")
+        y_offset = 0.7 if val > 0 else -1.0
+        txt = ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            val + y_offset,
+            f"{val:.1f}",
+            ha="center",
+            va="bottom" if val > 0 else "top",
+            fontsize=9,
+            color="#333333"
+        )
+        txt.set_path_effects([
+            path_effects.Stroke(linewidth=2, foreground="white"),
+            path_effects.Normal()
+        ])
 
-    # 중앙 기준선 (막대 테두리와 동일한 색/두께)
+    # 중앙 기준선
     ax.axhline(0, color="#444444", linewidth=1.0, zorder=2)
 
     # 주의 기준선
@@ -97,19 +109,19 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(4, color='#F28482', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='#7FC8F8', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 축 및 제목
+    # 축 및 제목 (깨짐 없는 ‘ㆍ’ 사용)
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, fontproperties=font_prop, fontsize=10)
-    ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=13, fontproperties=font_prop, pad=12)
+    ax.set_title("색 변화 방향 (밝기ㆍ붉은기ㆍ노란기)", fontsize=13, fontproperties=font_prop, pad=12)
     ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=font_prop)
 
-    # 범례 (연한 회색 배경, 한글 폰트 적용)
+    # 범례 (연한 회색 배경)
     legend = ax.legend(frameon=True, loc='upper right', fontsize=8, prop=font_prop)
     legend.get_frame().set_alpha(0.85)
     legend.get_frame().set_facecolor("#f2f2f2")
     legend.get_frame().set_edgecolor("none")
 
-    # 스타일 전체 정리
+    # 전체 스타일 유지
     fig.patch.set_facecolor("#fdfdfd")
     ax.set_facecolor("#ffffff")
     for side in ['top', 'right']:
@@ -216,5 +228,6 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
