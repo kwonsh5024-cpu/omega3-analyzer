@@ -161,7 +161,7 @@ def judge_oxidation(mean_lab, normal_lab):
     b_diff = mean_lab[2] - normal_lab[2]
 
     warning_signs = []
-    if L_diff <= -5: warning_signs.append("밝기 감소")
+    if L_diff <= -3: warning_signs.append("밝기 감소")
     if a_diff >= 4: warning_signs.append("붉은기 증가")
     if b_diff <= -3: warning_signs.append("노란기 감소")
 
@@ -246,3 +246,4 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
