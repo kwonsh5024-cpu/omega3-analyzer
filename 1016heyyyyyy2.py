@@ -64,31 +64,34 @@ def mean_lab_in_mask(image: Image.Image, mask):
 # LAB 변화 시각화
 # ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
-    fig, ax = plt.subplots(figsize=(5, 3.5))
+    fig, ax = plt.subplots(figsize=(4.8, 3.3))
     diffs = [L_diff, a_diff, b_diff]
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
-    colors = ['#FFDD55', '#FF8882', '#74B9FF']
+    colors = ['#F5C542', '#F28482', '#7FC8F8']
 
-    # 막대 그래프
-    bars = ax.bar(range(len(diffs)), diffs, color=colors, width=0.55, alpha=0.9, zorder=3)
+    # 막대 그래프 (테두리 추가)
+    bars = ax.bar(range(len(diffs)), diffs,
+                  color=colors,
+                  edgecolor="#444444", linewidth=1.0,  # 테두리
+                  width=0.55, alpha=0.9, zorder=3)
 
-    # 값 표시
+    # 막대 위에 값 표시
     for bar, val in zip(bars, diffs):
-        ax.text(bar.get_x() + bar.get_width()/2, val + (0.8 if val > 0 else -1),
+        ax.text(bar.get_x() + bar.get_width()/2, val + (0.7 if val > 0 else -1),
                 f"{val:.1f}", ha='center',
                 va='bottom' if val > 0 else 'top',
                 fontsize=9, color="#333333",
                 fontproperties=font_prop if font_prop else None)
 
-    # 중앙선 강조
-    ax.axhline(0, color='#333333', linewidth=1.5, alpha=0.8, zorder=2)
+    # 중앙 기준선 (막대 테두리와 동일한 색/두께)
+    ax.axhline(0, color="#444444", linewidth=1.0, zorder=2)
 
-    # 기준선 (주의 구간)
-    ax.axhline(-5, color='#FFDD55', linestyle='--', linewidth=1.2, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
-    ax.axhline(4, color='#FF8882', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
-    ax.axhline(-3, color='#74B9FF', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
+    # 주의 기준선
+    ax.axhline(-5, color='#F5C542', linestyle='--', linewidth=1.2, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
+    ax.axhline(4, color='#F28482', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
+    ax.axhline(-3, color='#7FC8F8', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 축 / 제목 / 폰트
+    # 축 및 제목
     ax.set_xticks(range(len(labels)))
     if font_prop:
         ax.set_xticklabels(labels, fontproperties=font_prop, fontsize=10)
@@ -99,14 +102,14 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=13, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10)
 
-    # 범례 (연한 회색 배경)
+    # 범례 (부드러운 회색 배경)
     legend = ax.legend(frameon=True, loc='upper right', fontsize=8,
                        prop=font_prop if font_prop else None)
     legend.get_frame().set_alpha(0.85)
-    legend.get_frame().set_facecolor("#f2f2f2")  # 연한 회색
+    legend.get_frame().set_facecolor("#f2f2f2")
     legend.get_frame().set_edgecolor("none")
 
-    # 배경 / 테두리 / 격자
+    # 스타일 전체 정리
     fig.patch.set_facecolor("#fdfdfd")
     ax.set_facecolor("#ffffff")
     for side in ['top', 'right']:
@@ -213,3 +216,4 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
