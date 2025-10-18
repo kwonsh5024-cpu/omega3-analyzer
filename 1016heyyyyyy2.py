@@ -130,6 +130,8 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.tick_params(axis='x', length=0)  # X축 눈금선 제거
     ax.tick_params(axis='y', length=0)  # Y축 눈금선 제거
 
+    plt.tight_layout()
+    st.pyplot(fig)
     
 # ----------------------------
 # 산패 판정 로직
@@ -226,6 +228,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
