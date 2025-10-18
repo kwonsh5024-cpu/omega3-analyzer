@@ -64,49 +64,68 @@ def mean_lab_in_mask(image: Image.Image, mask):
 # LAB 변화 시각화
 # ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
-    fig, ax = plt.subplots(figsize=(4.5, 3))
+    import matplotlib.patheffects as path_effects
+
+    fig, ax = plt.subplots(figsize=(5, 3.5))
     diffs = [L_diff, a_diff, b_diff]
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
-    colors = ['gold', 'tomato', 'skyblue']
 
-    bars = ax.bar(range(len(diffs)), diffs, color=colors)
+    # 파스텔톤 색상 팔레트 (톤다운)
+    colors = ['#FFDD55', '#FF8882', '#74B9FF']
 
-    # x축 레이블 적용
+    # 막대그래프 생성
+    bars = ax.bar(range(len(diffs)), diffs, color=colors, alpha=0.9, width=0.6, zorder=3)
+
+    # 막대 모서리 둥글림 + 그림자 효과
+    for bar in bars:
+        bar.set_path_effects([path_effects.withSimplePatchShadow(offset=(2, -2), alpha=0.3)])
+        bar.set_linewidth(0)
+        bar.set_alpha(0.95)
+
+    # X축 설정
     ax.set_xticks(range(len(labels)))
     if font_prop:
-        ax.set_xticklabels(labels, fontproperties=font_prop)
+        ax.set_xticklabels(labels, fontproperties=font_prop, fontsize=10)
     else:
-        ax.set_xticklabels(labels)
+        ax.set_xticklabels(labels, fontsize=10)
 
-    # 바 위 숫자 표시
+    # 값 라벨 (말풍선 느낌)
     for bar, val in zip(bars, diffs):
-        ax.text(bar.get_x() + bar.get_width()/2, val + (0.5 if val > 0 else -1),
-                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top',
-                fontsize=9, fontproperties=font_prop if font_prop else None)
+        ax.text(bar.get_x() + bar.get_width() / 2, val + (1 if val > 0 else -1.2),
+                f"{val:.1f}",
+                ha='center', va='bottom' if val > 0 else 'top',
+                fontsize=9, color="#333333",
+                bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="none", alpha=0.7))
 
-    ax.axhline(0, color='black', linewidth=1)
-    ax.axhline(-5, color='orange', linestyle='--', linewidth=1, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
-    ax.axhline(4, color='red', linestyle='--', linewidth=1, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
-    ax.axhline(-3, color='skyblue', linestyle='--', linewidth=1, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
+    # 기준선 (색상 통일 + 투명도)
+    ax.axhline(-5, color='#FFDD55', linestyle='--', linewidth=1.2, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
+    ax.axhline(4, color='#FF8882', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
+    ax.axhline(-3, color='#74B9FF', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
+    # 제목 / 축 / 범례
     if font_prop:
-        ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontproperties=font_prop)
+        ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=13, fontproperties=font_prop, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=font_prop)
-        ax.legend(fontsize=8, loc='upper right', prop=font_prop)
     else:
-        ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10)
+        ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=13, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10)
-        ax.legend(fontsize=8, loc='upper right')
 
-    ax.grid(axis='y', linestyle='--', alpha=0.3)
-    plt.tight_layout()
+    legend = ax.legend(frameon=True, loc='upper right', fontsize=8)
+    legend.get_frame().set_alpha(0.7)
+    legend.get_frame().set_facecolor("#ffffff")
+    legend.get_frame().set_edgecolor("none")
 
-    fig.patch.set_facecolor("#f9f9f9")
+    # 디자인 (배경·테두리)
+    fig.patch.set_facecolor("#fdfdfd")
     ax.set_facecolor("#ffffff")
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    st.pyplot(fig)
+    for side in ['top', 'right']:
+        ax.spines[side].set_visible(False)
+    for side in ['left', 'bottom']:
+        ax.spines[side].set_color("#cccccc")
 
+    ax.grid(axis='y', linestyle=':', alpha=0.3, zorder=0)
+    plt.tight_layout()
+    st.pyplot(fig)
 
 # ----------------------------
 # 산패 판정 로직
@@ -203,6 +222,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
