@@ -65,57 +65,53 @@ def mean_lab_in_mask(image: Image.Image, mask):
 # ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
     import matplotlib.patheffects as path_effects
+    import matplotlib.patches as mpatches
 
     fig, ax = plt.subplots(figsize=(5, 3.5))
     diffs = [L_diff, a_diff, b_diff]
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
 
-    # 파스텔톤 색상 팔레트 (톤다운)
+    # 파스텔톤 색상
     colors = ['#FFDD55', '#FF8882', '#74B9FF']
 
-    # 막대그래프 생성
-    bars = ax.bar(range(len(diffs)), diffs, color=colors, alpha=0.9, width=0.6, zorder=3)
-
-    # 막대 모서리 둥글림 + 그림자 효과
-    for bar in bars:
-        bar.set_path_effects([path_effects.withSimplePatchShadow(offset=(2, -2), alpha=0.3)])
-        bar.set_linewidth(0)
-        bar.set_alpha(0.95)
-
-    # X축 설정
-    ax.set_xticks(range(len(labels)))
-    if font_prop:
-        ax.set_xticklabels(labels, fontproperties=font_prop, fontsize=10)
-    else:
-        ax.set_xticklabels(labels, fontsize=10)
-
-    # 값 라벨 (말풍선 느낌)
-    for bar, val in zip(bars, diffs):
-        ax.text(bar.get_x() + bar.get_width() / 2, val + (1 if val > 0 else -1.2),
-                f"{val:.1f}",
-                ha='center', va='bottom' if val > 0 else 'top',
+    # 둥근 막대 구현
+    for i, (val, color) in enumerate(zip(diffs, colors)):
+        radius = 0.15
+        bar = mpatches.FancyBboxPatch(
+            (i - 0.25, 0), 0.5, val,
+            boxstyle=f"round,pad=0,rounding_size={radius*50}",
+            linewidth=0, facecolor=color, alpha=0.9, zorder=3)
+        ax.add_patch(bar)
+        # 값 텍스트 (단순 숫자)
+        ax.text(i, val + (0.8 if val > 0 else -1),
+                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top',
                 fontsize=9, color="#333333",
-                bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="none", alpha=0.7))
+                fontproperties=font_prop if font_prop else None)
 
-    # 기준선 (색상 통일 + 투명도)
+    # 기준선 (색상 통일, 투명도 조정)
     ax.axhline(-5, color='#FFDD55', linestyle='--', linewidth=1.2, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
     ax.axhline(4, color='#FF8882', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='#74B9FF', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 제목 / 축 / 범례
+    # 축, 제목, 폰트 통일
+    ax.set_xticks(range(len(labels)))
     if font_prop:
+        ax.set_xticklabels(labels, fontproperties=font_prop, fontsize=10)
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=13, fontproperties=font_prop, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10, fontproperties=font_prop)
     else:
+        ax.set_xticklabels(labels, fontsize=10)
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=13, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10)
 
-    legend = ax.legend(frameon=True, loc='upper right', fontsize=8)
+    # 범례 — 폰트 깨짐 방지 + 반투명
+    legend = ax.legend(frameon=True, loc='upper right', fontsize=8,
+                       prop=font_prop if font_prop else None)
     legend.get_frame().set_alpha(0.7)
     legend.get_frame().set_facecolor("#ffffff")
     legend.get_frame().set_edgecolor("none")
 
-    # 디자인 (배경·테두리)
+    # 스타일 정리
     fig.patch.set_facecolor("#fdfdfd")
     ax.set_facecolor("#ffffff")
     for side in ['top', 'right']:
@@ -222,6 +218,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
