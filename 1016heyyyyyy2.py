@@ -85,9 +85,9 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
                 fontsize=9, fontproperties=font_prop if font_prop else None)
 
     ax.axhline(0, color='black', linewidth=1)
-    ax.axhline(-5, color='orange', linestyle='--', linewidth=1, label='L* ≤ -5 : 어두워짐(주의)')
-    ax.axhline(4, color='red', linestyle='--', linewidth=1, label='a* ≥ +4 : 붉어짐(주의)')
-    ax.axhline(-3, color='brown', linestyle='--', linewidth=1, label='b* ≤ -3 : 노란기 감소(주의)')
+    ax.axhline(-5, color='orange', linestyle='--', linewidth=1, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
+    ax.axhline(4, color='red', linestyle='--', linewidth=1, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
+    ax.axhline(-3, color='skyblue', linestyle='--', linewidth=1, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
     if font_prop:
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=12, pad=10, fontproperties=font_prop)
@@ -203,6 +203,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
