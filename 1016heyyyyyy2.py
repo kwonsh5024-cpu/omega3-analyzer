@@ -105,7 +105,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     # X축 레이블 아래로 내리기
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, fontproperties=apple_font, fontsize=10)
-    ax.tick_params(axis='x', pad=6)  # 아래로 살짝 간격 띄움
+    ax.tick_params(axis='x', pad=11)  # 아래로 살짝 간격 띄움
 
     # 범례
     legend = ax.legend(frameon=True, loc='upper right', fontsize=8,
@@ -229,6 +229,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
