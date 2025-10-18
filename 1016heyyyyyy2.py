@@ -100,7 +100,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
 
     ax.grid(axis='y', linestyle='--', alpha=0.3)
     plt.tight_layout()
-    fig.patch.set_facecolor("#f9f9f9")
+fig.patch.set_facecolor("#f9f9f9")
 ax.set_facecolor("#ffffff")
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -201,6 +201,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
