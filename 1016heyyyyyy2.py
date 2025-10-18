@@ -64,15 +64,17 @@ def mean_lab_in_mask(image: Image.Image, mask):
 # LAB 변화 시각화
 # ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
-    # Apple 폰트 (제목, 라벨 전용)
-    apple_font_path = os.path.join(os.getcwd(), "AppleSDGothicNeoB.ttf")
+    # 폰트 경로 설정
+    apple_font_path = os.path.join(os.getcwd(), "AppleSDGothicNeoM.ttf")  # 중간 두께 버전
+    nanum_font_path = os.path.join(os.getcwd(), "NanumGothic.ttf")
+
+    # Apple 폰트
     if os.path.exists(apple_font_path):
         apple_font = font_manager.FontProperties(fname=apple_font_path)
     else:
-        apple_font = font_prop  # 폴백
+        apple_font = None
 
-    # Nanum 폰트 (숫자 및 범례 전용)
-    nanum_font_path = os.path.join(os.getcwd(), "NanumGothic.ttf")
+    # 숫자용 나눔고딕 폰트
     if os.path.exists(nanum_font_path):
         nanum_font = font_manager.FontProperties(fname=nanum_font_path)
     else:
@@ -83,23 +85,36 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
     colors = ['#F5C542', '#F28482', '#7FC8F8']
 
-    # 막대 그래프 (회색 테두리)
-    bars = ax.bar(range(len(diffs)), diffs,
-                  color=colors,
-                  edgecolor="#888888", linewidth=1.0,  # 테두리 색을 회색으로 통일
-                  width=0.55, alpha=0.9, zorder=3)
+    # 막대 그래프 (상단 테두리 제거)
+    bars = []
+    for i, val in enumerate(diffs):
+        bar = ax.bar(
+            i, val,
+            color=colors[i],
+            edgecolor="#888888", linewidth=1.0,
+            width=0.55, alpha=0.9, zorder=3
+        )
+        bars.append(bar)
 
-    # 숫자 (막대 위쪽에 거의 붙게)
+    # 상단 짧은 선(세로선) 제거
+    for bar in bars:
+        for patch in bar:
+            patch.set_linewidth(1.0)
+            patch.set_edgecolor("#888888")
+            patch.set_capstyle("butt")  # 상단 모서리 둔화
+            patch.set_joinstyle("miter")
+
+    # 숫자 (막대 위쪽에 붙게)
     for bar, val in zip(bars, diffs):
         ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + (0.3 if val > 0 else -0.6),
+            bar[0].get_x() + bar[0].get_width() / 2,
+            bar[0].get_height() + (0.2 if val > 0 else -0.7),
             f"{val:.1f}",
             ha='center',
             va='bottom' if val > 0 else 'top',
             fontsize=9,
             color="black",
-            fontproperties=nanum_font  # 숫자만 나눔고딕
+            fontproperties=nanum_font  # 숫자는 나눔고딕
         )
 
     # 중앙 기준선
@@ -110,8 +125,10 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     ax.axhline(4, color='#F28482', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='#7FC8F8', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 축 및 제목 (안전한 중점 문자 사용)
-    safe_title = "색 변화 방향 (밝기 ∙ 붉은기 ∙ 노란기)"  # ‘·’ 대신 ‘∙’ 사용
+    # 제목 안전문자 (‘·’ 정상 표시)
+    safe_title = "색 변화 방향 (밝기 · 붉은기 · 노란기)"
+
+    # 축 및 제목
     ax.set_xticks(range(len(labels)))
     if apple_font:
         ax.set_xticklabels(labels, fontproperties=apple_font, fontsize=10)
@@ -122,9 +139,11 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
         ax.set_title(safe_title, fontsize=13, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10)
 
-    # 범례 (나눔고딕 + 회색 배경)
-    legend = ax.legend(frameon=True, loc='upper right', fontsize=8,
-                       prop=nanum_font if nanum_font else None)
+    # 범례 (나눔고딕 적용)
+    legend = ax.legend(
+        frameon=True, loc='upper right', fontsize=8,
+        prop=nanum_font if nanum_font else None
+    )
     legend.get_frame().set_alpha(0.85)
     legend.get_frame().set_facecolor("#f2f2f2")
     legend.get_frame().set_edgecolor("none")
@@ -236,6 +255,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
