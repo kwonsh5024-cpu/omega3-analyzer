@@ -127,7 +127,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
         fontsize=8,
         prop=apple_font if apple_font else None
     )
-    legend.get_frame().set_alpha(0.85)
+    legend.get_frame().set_alpha(0.75)
     legend.get_frame().set_facecolor("#f2f2f2")
     legend.get_frame().set_edgecolor("none")
 
@@ -246,6 +246,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
