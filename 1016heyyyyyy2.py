@@ -65,37 +65,39 @@ def mean_lab_in_mask(image: Image.Image, mask):
 # ----------------------------
 def plot_lab_differences(L_diff, a_diff, b_diff):
     import matplotlib.patheffects as path_effects
-    import matplotlib.patches as FancyBboxPatch
+    from matplotlib.patches import FancyBboxPatch
 
     fig, ax = plt.subplots(figsize=(5, 3.5))
     diffs = [L_diff, a_diff, b_diff]
     labels = ['밝기 (L*)', '붉은기 (a*)', '노란기 (b*)']
-    colors = ['#FFDD55', '#FF8882', '#74B9FF']
+    colors = ['#FFDD55', '#FF8882', '#74B9FF']  # 부드럽고 선명한 파스텔톤
 
-    # 둥근 막대 직접 구현 (bar 대신 rectangle radius 적용)
+    # 둥근 막대
     for i, (val, color) in enumerate(zip(diffs, colors)):
-        radius = 0.15
-        if val >= 0:
-            bar = plt.Rectangle((i - 0.25, 0), 0.5, val, color=color, alpha=0.9,
-                                linewidth=0, zorder=3)
-        else:
-            bar = plt.Rectangle((i - 0.25, val), 0.5, -val, color=color, alpha=0.9,
-                                linewidth=0, zorder=3)
+        height = val
+        y_base = 0 if val >= 0 else val
+        bar = FancyBboxPatch(
+            (i - 0.25, y_base), 0.5, abs(height),
+            boxstyle="round,pad=0.05,rounding_size=6",
+            linewidth=0, facecolor=color, alpha=0.95, zorder=3
+        )
+        bar.set_path_effects([path_effects.SimplePatchShadow(offset=(1, -1), alpha=0.25)])
         ax.add_patch(bar)
-        # 끝부분을 둥글게 (path effect 대신 radius)
-        bar.set_path_effects([path_effects.SimplePatchShadow(offset=(1, -1), alpha=0.3)])
-        # 값 텍스트
         ax.text(i, val + (0.8 if val > 0 else -1),
-                f"{val:.1f}", ha='center', va='bottom' if val > 0 else 'top',
+                f"{val:.1f}", ha='center',
+                va='bottom' if val > 0 else 'top',
                 fontsize=9, color="#333333",
                 fontproperties=font_prop if font_prop else None)
 
-    # 기준선 (색상 통일 + 투명도)
+    # 중앙선 (0선 강조)
+    ax.axhline(0, color='#333333', linewidth=1.5, alpha=0.8, zorder=1)
+
+    # 기준선 (주의 구간)
     ax.axhline(-5, color='#FFDD55', linestyle='--', linewidth=1.2, alpha=0.8, label='L* ≤ -5 : 어두워짐(주의)')
     ax.axhline(4, color='#FF8882', linestyle='--', linewidth=1.2, alpha=0.8, label='a* ≥ +4 : 붉어짐(주의)')
     ax.axhline(-3, color='#74B9FF', linestyle='--', linewidth=1.2, alpha=0.8, label='b* ≤ -3 : 노란기 감소(주의)')
 
-    # 축 설정
+    # 축, 제목, 폰트
     ax.set_xticks(range(len(labels)))
     if font_prop:
         ax.set_xticklabels(labels, fontproperties=font_prop, fontsize=10)
@@ -106,14 +108,14 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
         ax.set_title("색 변화 방향 (밝기·붉은기·노란기)", fontsize=13, pad=12)
         ax.set_ylabel("변화량 (Δ)", fontsize=10)
 
-    # 범례 (폰트 깨짐 방지 + 반투명)
+    # 범례 (연한 회색 배경)
     legend = ax.legend(frameon=True, loc='upper right', fontsize=8,
                        prop=font_prop if font_prop else None)
-    legend.get_frame().set_alpha(0.7)
-    legend.get_frame().set_facecolor("#ffffff")
+    legend.get_frame().set_alpha(0.8)
+    legend.get_frame().set_facecolor("#f2f2f2") 
     legend.get_frame().set_edgecolor("none")
 
-    # 전체 스타일 통일
+    # 배경 / 테두리 스타일
     fig.patch.set_facecolor("#fdfdfd")
     ax.set_facecolor("#ffffff")
     for side in ['top', 'right']:
@@ -121,6 +123,7 @@ def plot_lab_differences(L_diff, a_diff, b_diff):
     for side in ['left', 'bottom']:
         ax.spines[side].set_color("#cccccc")
     ax.grid(axis='y', linestyle=':', alpha=0.3, zorder=0)
+
     plt.tight_layout()
     st.pyplot(fig)
     
@@ -219,6 +222,7 @@ if multi_files:
             st.warning("⚠️ 알약 영역 인식 실패. 배경 단색 사진 사용 권장.")
 else:
     st.info("오메가-3 캡슐 이미지를 업로드하면 결과가 표시됩니다.")
+
 
 
 
